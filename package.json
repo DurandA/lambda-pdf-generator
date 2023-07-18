@@ -2,6 +2,7 @@
   "type": "module",
   "dependencies": {
     "@sparticuz/chromium": "112.0.2",
+    "busboy": "^1.6.0",
     "puppeteer-core": "19.8.0"
   }
 }
