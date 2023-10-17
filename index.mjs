@@ -103,14 +103,23 @@ export const handler = async (event) => {
         const marginLeft = queryStringParameters.marginLeft || margin;
         const scale = parseFloat(queryStringParameters.scale || 1);
 
-        const pdf = await page.pdf({
+        let pdfOptions = {
             format: format,
             printBackground: true,
             landscape: landscape,
             margin: { top: marginTop, right: marginRight, bottom: marginBottom, left: marginLeft },
             displayHeaderFooter: true,
             scale: scale,
-        });
+        }
+
+        if (resources["header.html"]) {
+            pdfOptions.headerTemplate = resources["header.html"].content.toString();
+        }
+        if (resources["footer.html"]) {
+            pdfOptions.footerTemplate = resources["footer.html"].content.toString();
+        }
+
+        const pdf = await page.pdf(pdfOptions);
 
         return {
             statusCode: 200,
