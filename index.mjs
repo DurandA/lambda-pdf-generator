@@ -93,11 +93,23 @@ export const handler = async (event) => {
             throw new Error("Missing index.html in the request");
         }
 
+        const queryStringParameters = event.queryStringParameters || {};
+        const format = queryStringParameters.format || 'A4';
+        const landscape = queryStringParameters.landscape === 'true';
+        const margin = queryStringParameters.margin || 20;
+        const marginTop = queryStringParameters.marginTop || margin;
+        const marginRight = queryStringParameters.marginRight || margin;
+        const marginBottom = queryStringParameters.marginBottom || margin;
+        const marginLeft = queryStringParameters.marginLeft || margin;
+        const scale = parseFloat(queryStringParameters.scale || 1);
+
         const pdf = await page.pdf({
-            format: 'A4',
+            format: format,
             printBackground: true,
-            margin: { top: 20, left: 20, right: 20, bottom: 20 },
-            displayHeaderFooter: true
+            landscape: landscape,
+            margin: { top: marginTop, right: marginRight, bottom: marginBottom, left: marginLeft },
+            displayHeaderFooter: true,
+            scale: scale,
         });
 
         return {
