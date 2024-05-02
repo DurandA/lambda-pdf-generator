@@ -19,18 +19,19 @@ export const handler = async (event) => {
         let resources = {};
 
         const onData = new Promise((resolve, reject) => {
-            busboy.on('file', async (fieldname, file, filename, encoding, mimetype) => {
-                if(!resources[fieldname]) {
-                    resources[fieldname] = {
+            busboy.on('file', (name, file, info) => {
+                const { filename, encoding, mimeType } = info;
+                if(!resources[name]) {
+                    resources[name] = {
                         data: [],
-                        mimetype: mimetype
+                        mimetype: mimeType
                     };
                 }
                 file.on('data', data => {
-                    resources[fieldname].data.push(data);
+                    resources[name].data.push(data);
                 });
                 file.on('end', () => {
-                    resources[fieldname].content = Buffer.concat(resources[fieldname].data);
+                    resources[name].content = Buffer.concat(resources[name].data);
                 });
             });
             busboy.on('finish', resolve);
