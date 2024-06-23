@@ -2,6 +2,7 @@ import puppeteer from "puppeteer-core";
 import chromium from "@sparticuz/chromium";
 import Busboy from "busboy";
 import path from 'path';
+import zlib from 'node:zlib';
 
 export const handler = async (event) => {
     let browser = null;
@@ -122,13 +123,30 @@ export const handler = async (event) => {
 
         const pdf = await page.pdf(pdfOptions);
 
+        let responseBody;
+        let responseHeaders = {
+            "content-type": "application/pdf",
+            "content-disposition": "attachment; filename=output.pdf",
+        };
+
+        // Check if client accepts gzip encoding
+        const acceptEncoding = headers['accept-encoding'] || headers['Accept-Encoding'];
+        if (acceptEncoding && acceptEncoding.includes('gzip')) {
+            const compressedPdf = zlib.gzipSync(pdf);
+            responseBody = compressedPdf;
+            responseHeaders['content-encoding'] = 'gzip';
+        } else {
+            responseBody = pdf.toString('base64');
+        }
+
+        for (const page of await browser.pages()) {
+            await page.close();
+        }
+
         return {
             statusCode: 200,
-            headers: {
-                "Content-Type": "application/pdf",
-                "Content-Disposition": "attachment; filename=test.pdf",
-            },
-            body: pdf.toString('base64'),
+            headers: responseHeaders,
+            body: responseBody.toString('base64'),
             isBase64Encoded: true
         };
     } catch(error) {
